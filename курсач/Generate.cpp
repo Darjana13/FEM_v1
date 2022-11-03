@@ -112,7 +112,7 @@ void Make_grid(std::string path)
     }
 
     // справа вторые, по остальным - первые
-    out.open("S1.txt");
+    /*out.open("S1.txt");
     out << top.size() + left.size() + bottom.size() - 2 << " 0\n";
     for (int j = 0; j < top.size(); j++)
     {
@@ -144,9 +144,9 @@ void Make_grid(std::string path)
     out.open("S3_z.txt");
     out << 0;
     out.close();
-
+    */
     // везде первые
-    /*out.open("S1.txt");
+    out.open("S1.txt");
     out << top.size() + left.size() + bottom.size() + right.size() - 4 << " 0\n";
     for (int j = 0; j < top.size(); j++)
     {
@@ -176,7 +176,7 @@ void Make_grid(std::string path)
     out.close();
     out.open("S3_z.txt");
     out << 0;
-    out.close();*/
+    out.close();
 }
 
 void Create_time_grid()

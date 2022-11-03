@@ -4,6 +4,18 @@
 #include <math.h>
 #include "Solver.h"
 #include "Generate.h"
+using namespace std;
+
+typedef // создаем новый прототип (в данном случае указатель на функцию)
+double // возвращаемое значение (такое же как в функциях)
+(*basis_func) // имя прототипа (в коде употребляется без звездочки)
+(double, double, double); // список параметров (такое же как в функциях)
+
+double linear1(double x1, double x2, double x) { return (x2 - x) / (x2 - x1); }
+double linear2(double x1, double x2, double x) { return (x - x1) / (x2 - x1); }
+double dlinear1(double x1, double x2, double x) { return (-1.0) / (x2 - x1); }
+double dlinear2(double x1, double x2, double x) { return (1.0) / (x2 - x1); }
+
 
 MyVector q1, q2, q3, q4;
 
@@ -48,6 +60,8 @@ double gamma(double r, double z, int gam_id) // значение гамма по индексу gam_id
         std::cout << "can't find gamma № " << gam_id << "\n";
         break;
     }
+    return 1;
+
 }
 double beta(double r, double z, int beta_id) // считаем, что бета везде одинаковая
 {
@@ -59,6 +73,8 @@ double beta(double r, double z, int beta_id) // считаем, что бета везде одинаков
         std::cout << "can't find gamma № " << beta_id << "\n";
         break;
     }
+    return 1;
+
 }
 
 double func_f(double r, double z, int f_id) // значение f по индексу f_id 
@@ -102,6 +118,163 @@ double func_S(double r, double z, int s_id) // значение краевого S по индексу f_
         break;
     }
 }
+
+int Input_no_time() // чтение данных
+{
+    int N, Nmat, Kel, NS1, Ntime, NS;
+    std::ifstream in;
+
+    in.open("info.txt");
+    in >> N >> Nmat >> Kel >> NS1;
+    in.close();
+
+    in.open("rz.txt");
+    all_nodes.resize(N);
+    for (int i = 0; i < N; i++)
+    {
+        in >> all_nodes[i].r >> all_nodes[i].z;
+    }
+    in.close();
+
+    /*in.open("time.txt");
+    in >> Ntime;
+    time_grid.resize(Ntime);
+    for (int i = 0; i < Ntime; i++)
+    {
+        in >> time_grid[i];
+    }
+    in.close();
+
+    // для тестирования
+    std::ofstream temp("q0 q1 q2.txt");
+    temp.precision(15);
+    for (int k = 0; k < 3; k++)
+    {
+        i_t = k;
+        for (int i = 0; i < N; i++)
+        {
+            temp << func_S(all_nodes[i].r, all_nodes[i].z, 0) << " ";
+        }
+        temp << "\n";
+    }
+    temp.close();
+    // конец для тестирования
+
+    in.open("q0 q1 q2.txt");
+    q1.Size(N);
+    for (int i = 0; i < N; i++)
+    {
+        in >> q1.vect[i];
+    }
+    q2.Size(N);
+    for (int i = 0; i < N; i++)
+    {
+        in >> q2.vect[i];
+    }
+    q3.Size(N);
+    for (int i = 0; i < N; i++)
+    {
+        in >> q3.vect[i];
+    }*/
+    q4.Size(N);
+    //in.close();
+
+    in.open("S1.txt");
+    S1.resize(NS1);
+    for (int i = 0; i < NS1; i++)
+    {
+        int size;
+        in >> size >> S1[i].first;
+        S1[i].second.resize(size);
+        for (int j = 0; j < size; j++)
+        {
+            in >> S1[i].second[j];
+        }
+    }
+    in.close();
+
+    in.open("S2_r.txt");
+    in >> NS;
+    S2_r.resize(NS);
+    for (int i = 0; i < NS; i++)
+    {
+        int size;
+        in >> size >> S2_r[i].first;
+        S2_r[i].second.resize(size);
+        for (int j = 0; j < size; j++)
+        {
+            in >> S2_r[i].second[j];
+        }
+    }
+    in.close();
+
+    in.open("S2_z.txt");
+    in >> NS;
+    S2_z.resize(NS);
+    for (int i = 0; i < NS; i++)
+    {
+        int size;
+        in >> size >> S2_z[i].first;
+        S2_z[i].second.resize(size);
+        for (int j = 0; j < size; j++)
+        {
+            in >> S2_z[i].second[j];
+        }
+    }
+    in.close();
+
+    in.open("S3_r.txt");
+    in >> NS;
+    S3_r.resize(NS);
+    for (int i = 0; i < NS; i++)
+    {
+        int size;
+        in >> size >> S3_r[i].first;
+        S3_r[i].second.resize(size);
+        for (int j = 0; j < size; j++)
+        {
+            in >> S3_r[i].second[j];
+        }
+    }
+    in.close();
+
+    in.open("S3_z.txt");
+    in >> NS;
+    S3_z.resize(NS);
+    for (int i = 0; i < NS; i++)
+    {
+        int size;
+        in >> size >> S3_z[i].first;
+        S3_z[i].second.resize(size);
+        for (int j = 0; j < size; j++)
+        {
+            in >> S3_z[i].second[j];
+        }
+    }
+    in.close();
+
+    in.open("material.txt");
+    all_materials.resize(Nmat);
+    for (int i = 0; i < Nmat; i++)
+    {
+        in >> all_materials[i].lambda >> all_materials[i].gamma_id;
+    }
+    in.close();
+
+    in.open("elem.txt");
+    all_elems.resize(Kel);
+    for (int i = 0; i < Kel; i++)
+    {
+        all_elems[i].node_loc.resize(4);
+        in >> all_elems[i].node_loc[0] >> all_elems[i].node_loc[1]
+            >> all_elems[i].node_loc[2] >> all_elems[i].node_loc[3]
+            >> all_elems[i].mater >> all_elems[i].f_id;
+    }
+    in.close();
+
+    return 0;
+}
+
 
 int Input() // чтение данных
 {
@@ -771,9 +944,10 @@ int main()
     Make_grid(""); // for creating tests
     //Create_time_grid();
 
-    Input();
+    //Input();
+    Input_no_time();
 
-    std::vector<std::vector<double>> result(time_grid.size()-3); // for tests
+    //std::vector<std::vector<double>> result(time_grid.size()-3); // for tests
 
     MyMatrix M, G, A, MS;
     GeneratePortrait(M, all_nodes.size(), all_elems.size());
@@ -811,213 +985,64 @@ int main()
         Get_Loc(M_loc, G_loc, i);
         AddLocal(M.ia, M.ja, M.di, M.al, M.au, M_loc, i);
         AddLocal(G.ia, G.ja, G.di, G.al, G.au, G_loc, i);
+        Get_Loc_b(b_loc, i);
+        AddLocal_b(A.b.vect, b_loc, i);
     }
+    Set_S2(MS);
+    Set_S3(MS, true); //!!!!!!!!!!!!!!! матрица А не меняется
+    A = A + MS;
+    A.b = A.b + MS.b;
+    SetS1(A.ia, A.ja, A.di, A.al, A.au, A.b.vect);
+    std::fill(MS.al.begin(), MS.al.end(), 0);
+    std::fill(MS.au.begin(), MS.au.end(), 0);
+    std::fill(MS.di.begin(), MS.di.end(), 0);
+    
+    Solver slau(A);
+    slau.CGM_LU();
+    slau.getx0(q4.vect);
 
-    std::ofstream out("result.txt");
-    //out.imbue(std::locale("Russian"));
-    out.precision(15);
+    //ifstream points("Point.txt");
+    ofstream res("Point.txt");
+    ofstream file("f(r,z).txt");
 
-    double 
-        dt01 = 0,
-        dt02 = 0,
-        dt03 = 0,
-        dt12 = 0,
-        dt13 = 0,
-        dt23 = 0;
-    bool change_matrix;
-    // явная
-    /*for (i_t = 3; i_t < time_grid.size(); i_t++)
+    vector<basis_func> basis1D = { linear1, linear2 };
+    vector<basis_func> dbasis1D = { dlinear1, dlinear2 };
+
+    int p_count = all_elems.size();
+    double tmp, r, z, f, df_dx, df_dy, df_dx_dy;
+    double r1, r2, z1, z2;
+    res << p_count << endl;
+    for (int el_i = 0; el_i < all_elems.size(); el_i++)
     {
-        change_matrix = false;
-        if (dt01 != time_grid[i_t] - time_grid[i_t - 1] ||
-            dt02 != time_grid[i_t] - time_grid[i_t - 2] ||
-            dt03 != time_grid[i_t] - time_grid[i_t - 3] ||
-            dt12 != time_grid[i_t - 1] - time_grid[i_t - 2] ||
-            dt13 != time_grid[i_t - 1] - time_grid[i_t - 3] ||
-            dt23 != time_grid[i_t - 2] - time_grid[i_t - 3])
-            change_matrix = true;
+        r1 = all_nodes[all_elems[el_i].node_loc[0]].r;
+        r2 = all_nodes[all_elems[el_i].node_loc[1]].r;
+        z1 = all_nodes[all_elems[el_i].node_loc[0]].z;
+        z2 = all_nodes[all_elems[el_i].node_loc[2]].z;
 
-        dt01 = time_grid[i_t] - time_grid[i_t - 1];
-        dt02 = time_grid[i_t] - time_grid[i_t - 2];
-        dt03 = time_grid[i_t] - time_grid[i_t - 3];
-        dt12 = time_grid[i_t - 1] - time_grid[i_t - 2];
-        dt13 = time_grid[i_t - 1] - time_grid[i_t - 3];
-        dt23 = time_grid[i_t - 2] - time_grid[i_t - 3];
-        //пересобрать матрицу, если необходимо
-        if (change_matrix)
+        r = (r1 + r2) / 2;
+        z = (z1 + z2) / 2;
+
+        f = 0;
+        df_dx = 0;
+        df_dy = 0;
+        df_dx_dy = 0;
+        for (int i = 0; i < 4; i++)
         {
-            A = M * ((dt01 * dt02 + dt01 * dt03 + dt02 * dt03) / (dt01 * dt02 * dt03));
-            A.b.Size(G.N);
+            f += q4.vect[all_elems[el_i].node_loc[i]] * basis1D[i%2](r1, r2, r) * basis1D[i/2](z1, z2, z);
+            df_dx += q4.vect[all_elems[el_i].node_loc[i]] * dbasis1D[i % 2](r1, r2, r) * basis1D[i / 2](z1, z2, z);
+            df_dy += q4.vect[all_elems[el_i].node_loc[i]] * basis1D[i % 2](r1, r2, r) * dbasis1D[i / 2](z1, z2, z);
+            df_dx_dy += q4.vect[all_elems[el_i].node_loc[i]] * dbasis1D[i % 2](r1, r2, r) * dbasis1D[i / 2](z1, z2, z);
         }
-        // пересобрать вектор правой части
-        // обнуляет вектор
-        for (int i = 0; i < A.b.vect.size(); i++)
-        {
-            A.b.vect[i] = 0;
-            MS.b.vect[i] = 0;
-        }
-        i_t--; //по-идее, b с предыдущего времени, но работает только на текущем
-        // собирает вектор
-        for (int i = 0; i < all_elems.size(); i++)
-        {
-            Get_Loc_b(b_loc, i);
-            AddLocal_b(A.b.vect, b_loc, i);
-        }
-        i_t++; //вернуть счетчик, если уменьшали
-        MyVector temp;
-        temp.Size(all_nodes.size());
-        M.Ax(q1, temp);
-        A.b = A.b + temp * ((dt01 * dt02) / (dt03 * dt13 * dt23));
-        M.Ax(q2, temp);
-        A.b = A.b + temp * ((-dt01 * dt03) / (dt02 * dt12 * dt23));
-        M.Ax(q3, temp);
-        A.b = A.b + temp * ((dt02 * dt03) / (dt01 * dt12 * dt13));
-        G.Ax(q3, temp);
-        A.b = A.b + temp * (-1);
+        res << r << '\t' << z << '\t' << f << '\t' << 1 << endl;
+        file << r << '\t' << z << '\t' << f << '\t' << df_dx << '\t' << df_dy << '\t' << df_dx_dy << endl;
 
-        // учесть краевые
-        //Set_S2(MS);
-        //Set_S3(MS, change_matrix); //!!!!!!!!!!!!!!! матрица А не меняется
-        //A = A + MS;
-        //A.b = A.b + MS.b;
-        SetS1(A.ia, A.ja, A.di, A.al, A.au, A.b.vect);
-        
-        //if (change_matrix) // если меняли матрицу, сбросить учтенные в А краевые
-        //{
-        //    std::fill(MS.al.begin(), MS.al.end(), 0);
-        //    std::fill(MS.au.begin(), MS.au.end(), 0);
-        //    std::fill(MS.di.begin(), MS.di.end(), 0);
-        //}
-
-
-        // решить СЛАУ
-        Solver slau(A);
-        slau.CGM_LU();
-        slau.getx0(q4.vect);
-
-        // вывести ответ на временном слое
-        //out << "time = " << ";" << time_grid[i_t] << "\n";
-        //for (int i = 0; i < all_nodes.size(); i++)
-        //{
-        //    out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q4.vect[i] << "\n";
-        //}
-        result[i_t - 3] = q4.vect; // for tests
-        // сменить слой
-        q1.vect.swap(q2.vect);
-        q2.vect.swap(q3.vect);
-        q3.vect.swap(q4.vect);
-    }*/
-
-    // неявная
-    for (i_t = 3; i_t < time_grid.size(); i_t++)
-    {
-        change_matrix = false;
-        if (dt01 != time_grid[i_t] - time_grid[i_t - 1] ||
-            dt02 != time_grid[i_t] - time_grid[i_t - 2] ||
-            dt03 != time_grid[i_t] - time_grid[i_t - 3] ||
-            dt12 != time_grid[i_t - 1] - time_grid[i_t - 2] ||
-            dt13 != time_grid[i_t - 1] - time_grid[i_t - 3] ||
-            dt23 != time_grid[i_t - 2] - time_grid[i_t - 3])
-            change_matrix = true;
-
-        dt01 = time_grid[i_t] - time_grid[i_t - 1];
-        dt02 = time_grid[i_t] - time_grid[i_t - 2];
-        dt03 = time_grid[i_t] - time_grid[i_t - 3];
-        dt12 = time_grid[i_t - 1] - time_grid[i_t - 2];
-        dt13 = time_grid[i_t - 1] - time_grid[i_t - 3];
-        dt23 = time_grid[i_t - 2] - time_grid[i_t - 3];
-
-        double sum = 0;
-        //пересобрать матрицу, если необходимо
-        if (change_matrix)
-        {         
-            A = G;
-            A.b.Size(G.N);
-            A = A + M * ((dt01 * dt02 + dt01 * dt03 + dt02 * dt03) / (dt01 * dt02 * dt03));  
-          
-        }
-        //sum += (dt01 * dt02 + dt01 * dt03 + dt02 * dt03) / (dt01 * dt02 * dt03);
-        // пересобрать вектор правой части
-        for (int i = 0; i < A.b.vect.size(); i++)
-        {
-            A.b.vect[i] = 0;
-            MS.b.vect[i] = 0;
-        }
-        
-
-
-        for (int i = 0; i < all_elems.size(); i++)
-        {
-            Get_Loc_b(b_loc, i);
-            AddLocal_b(A.b.vect, b_loc, i);
-        }
-        MyVector temp;
-        temp.Size(all_nodes.size());
-        M.Ax(q1, temp);
-        A.b = A.b + temp * ((dt01 * dt02) / (dt03 * dt13 * dt23));
-        M.Ax(q2, temp);
-        A.b = A.b + temp * ((-dt01 * dt03) / (dt02 * dt12 * dt23));
-        M.Ax(q3, temp);
-        A.b = A.b + temp * ((dt02 * dt03) / (dt01 * dt12 * dt13));
-
-        //sum += (dt01 * dt02) / (dt03 * dt13 * dt23);
-        //sum += (-dt01 * dt03) / (dt02 * dt12 * dt23);
-        //sum += (dt02 * dt03) / (dt01 * dt12 * dt13);
-        //std::cout << sum << "\n";
-
-        // учесть краевые
-        Set_S2(MS);
-        Set_S3(MS, change_matrix); //!!!!!!!!!!!!!!! матрица А не меняется
-        A = A + MS;
-        A.b = A.b + MS.b;
-        SetS1(A.ia, A.ja, A.di, A.al, A.au, A.b.vect);
-        if (change_matrix) // если меняли матрицу, сбросить учтенные в А краевые
-        {
-            std::fill(MS.al.begin(), MS.al.end(), 0);
-            std::fill(MS.au.begin(), MS.au.end(), 0);
-            std::fill(MS.di.begin(), MS.di.end(), 0);
-        }
-
-
-        // решить СЛАУ
-        Solver slau(A);
-        slau.CGM_LU();
-        slau.getx0(q4.vect);
-
-        // вывести ответ на временном слое
-        //out << "time = " << ";" << time_grid[i_t] << "\n";
-        //for (int i = 0; i < all_nodes.size(); i++)
-        //{
-        //    out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q4.vect[i] << "\n";
-        //}
-        result[i_t - 3] = q4.vect; // for tests
-        // сменить слой
-        q1.vect.swap(q2.vect);
-        q2.vect.swap(q3.vect);
-        q3.vect.swap(q4.vect);
     }
+    res.close();
+    res.clear();
+    file.close();
+    file.clear();
 
-    // for tests
-    bool outflag = false;
-    for (int i = 0; i < all_nodes.size(); i++)
-    {
-        if ((int)(all_nodes[i].r * 10) % 10 == 0)
-        {
-            for (int j = 0; j < time_grid.size() - 3; j++)
-            {
-                if ((int)(all_nodes[i].z * 10) % 10 == 0)
-                {
-                    out << result[j][i] << "\t";
-                    outflag = true;
-                }
-            }
-            if (outflag)
-            {
-                out << "\n";
-                outflag = false;
-            }
-        }
-    }
+
 
     return 0;
 }
