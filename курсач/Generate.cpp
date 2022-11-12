@@ -64,6 +64,7 @@ void Make_grid(std::string path)
     }
     in.close();
     out.open("rz.txt");
+    out << count_z * count_r << '\n';
     for (int i = 0; i < count_z; i++)
     {
         for (int j = 0; j < count_r; j++)
@@ -76,6 +77,8 @@ void Make_grid(std::string path)
     // input area
     // lambda, sigma same in all area
     out.open("elem.txt");
+    out << (count_z-1) * (count_r-1) << '\n';
+
     for (int i = 0; i < count_z - 1; i++)
     {
         for (int j = 0; j < count_r - 1; j++)

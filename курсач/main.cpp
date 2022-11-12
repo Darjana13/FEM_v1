@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <set>
 #include "Solver.h"
 #include "Generate.h"
 using namespace std;
@@ -55,6 +56,7 @@ double gamma(double r, double z, int gam_id) // значение гамма по индексу gam_id
     switch (gam_id)
     {
     case 0:
+        // !!! сюда написать коэффициент gamma
         return 1;
     default:
         std::cout << "can't find gamma № " << gam_id << "\n";
@@ -79,11 +81,18 @@ double beta(double r, double z, int beta_id) // считаем, что бета везде одинаков
 
 double func_f(double r, double z, int f_id) // значение f по индексу f_id 
 {
-    double t = time_grid[i_t];
+    double t = 0;
+    if(time_grid.size() != 0)
+        t = time_grid[i_t];
     switch (f_id)
     {
     case 0:
-        return   -4 - 5
+        return  //5
+            // !!! сюда написать -div (lambda grad u*) + gamma u*, (посмотреть, как раскрывается div grad в цилиндрических координатах)
+            // u* указать в func_S 
+            // lambda - первое число в файле material.txt
+            // gamma в функции gamma
+            11.0 * cos(3.0 * r + z) + 3.0 / r * sin(3.0 * r + z)
 
             ;
     default:
@@ -94,11 +103,15 @@ double func_f(double r, double z, int f_id) // значение f по индексу f_id
 
 double func_S(double r, double z, int s_id) // значение краевого S по индексу f_id
 {
-    double t = time_grid[i_t];
+    double t = 0;
+    if (time_grid.size() != 0)
+        t = time_grid[i_t];
     switch (s_id)
     {
     case 0:
-        return r * r + 3 * z - 5 * t
+        return //5
+            // !!! сюда написать истинную функцию u*
+            cos(3.0 * r + z)
 
             ;
     case 1:// 2_z
@@ -125,10 +138,13 @@ int Input_no_time() // чтение данных
     std::ifstream in;
 
     in.open("info.txt");
-    in >> N >> Nmat >> Kel >> NS1;
+    //in >> N >> Nmat >> Kel >> NS1;
+    Nmat = 1;
+    NS1 = 1;
     in.close();
 
     in.open("rz.txt");
+    in >> N;
     all_nodes.resize(N);
     for (int i = 0; i < N; i++)
     {
@@ -262,6 +278,7 @@ int Input_no_time() // чтение данных
     in.close();
 
     in.open("elem.txt");
+    in >> Kel;
     all_elems.resize(Kel);
     for (int i = 0; i < Kel; i++)
     {
@@ -608,7 +625,39 @@ int Get_Loc_b(std::vector<double>& b_loc,
 int GeneratePortrait(MyMatrix &A, 
     int N, int Kel) // генерация портрета
 {
-    std::vector<int>* ia = &A.ia,
+    int N_loc = 4;
+    A.ia.resize(N + 1);
+   
+    vector<set<int>> map(N);
+    int k = 0;
+    for (auto elem : all_elems)
+    {
+        for (auto i : elem.node_loc)
+            for (auto j : elem.node_loc)
+            {
+                if (i > j)
+                  map[i].insert(j);
+            }
+    }
+    A.ia[0] = 0;
+    for (int i = 0; i < N; i++)
+    {
+        A.ia[i + 1] = A.ia[i] + map[i].size();
+    }
+
+    A.ja.resize(A.ia[N]);
+    for (int i = 0; i < N; i++)
+    {
+        set <int> ::iterator it = map[i].begin();
+        for (int j = 0; it != map[i].end(); it++, j++)
+        {
+            A.ja[A.ia[i] + j] = *(it);
+        }
+    }
+
+    return 0;
+
+    /*std::vector<int>* ia = &A.ia,
         * ja = &A.ja;
     ia->resize(N + 1);
     ja->resize(16 * Kel);
@@ -682,7 +731,7 @@ int GeneratePortrait(MyMatrix &A,
     }
 
     ja->resize((*ia)[N]);
-    return 0;
+    return 0;*/
 }
 
 int AddLocal(std::vector<int>& iaM, std::vector<int>& jaM, std::vector<double>& diM,
@@ -953,6 +1002,8 @@ int main()
     GeneratePortrait(M, all_nodes.size(), all_elems.size());
     G.ia = M.ia;
     G.ja = M.ja;
+    A.ia = M.ia;
+    A.ja = M.ja;
     M.au.resize(M.ja.size());
     M.al.resize(M.ja.size());
     M.N = all_nodes.size();
@@ -968,7 +1019,11 @@ int main()
     G.al.resize(G.ja.size());
     G.N = all_nodes.size();
     G.di.resize(G.N);
-    
+    A.au.resize(G.ja.size());
+    A.al.resize(G.ja.size());
+    A.N = all_nodes.size();
+    A.di.resize(G.N);
+    A.b.vect.resize(G.N);
 
     std::vector<std::vector<double>> M_loc(4), G_loc(4);
     for (int i = 0; i < 4; i++)
@@ -983,11 +1038,12 @@ int main()
     for (int i = 0; i < all_elems.size(); i++)
     {
         Get_Loc(M_loc, G_loc, i);
-        AddLocal(M.ia, M.ja, M.di, M.al, M.au, M_loc, i);
-        AddLocal(G.ia, G.ja, G.di, G.al, G.au, G_loc, i);
+        AddLocal(A.ia, A.ja, A.di, A.al, A.au, M_loc, i);
+        AddLocal(A.ia, A.ja, A.di, A.al, A.au, G_loc, i);
         Get_Loc_b(b_loc, i);
         AddLocal_b(A.b.vect, b_loc, i);
     }
+    //A = A + G;
     Set_S2(MS);
     Set_S3(MS, true); //!!!!!!!!!!!!!!! матрица А не меняется
     A = A + MS;
@@ -1001,9 +1057,10 @@ int main()
     slau.CGM_LU();
     slau.getx0(q4.vect);
 
-    //ifstream points("Point.txt");
-    ofstream res("Point.txt");
-    ofstream file("f(r,z).txt");
+
+    // !!! тут вывод
+    ofstream res("Point.txt"); // !!! этот файл надо будет перетащить в папку со сплайном
+    ofstream file("f(r,z).txt"); // !!! в этом файле пишется r, z, f, df/dr, df/dz, ddf/(drdz), надо сравнить с аналогичной штукой в сплайне
 
     vector<basis_func> basis1D = { linear1, linear2 };
     vector<basis_func> dbasis1D = { dlinear1, dlinear2 };
@@ -1012,6 +1069,7 @@ int main()
     double tmp, r, z, f, df_dx, df_dy, df_dx_dy;
     double r1, r2, z1, z2;
     res << p_count << endl;
+    double sum_residual = 0;
     for (int el_i = 0; el_i < all_elems.size(); el_i++)
     {
         r1 = all_nodes[all_elems[el_i].node_loc[0]].r;
@@ -1035,8 +1093,10 @@ int main()
         }
         res << r << '\t' << z << '\t' << f << '\t' << 1 << endl;
         file << r << '\t' << z << '\t' << f << '\t' << df_dx << '\t' << df_dy << '\t' << df_dx_dy << endl;
-
+        //check << r << '\t' << z << '\t' << f << '\t' << func_S(r, z, 0) << '\t' << abs(f - func_S(r, z, 0)) / abs(func_S(r, z, 0)) << endl;
+        sum_residual += abs(f - func_S(r, z, 0)) / abs(func_S(r, z, 0));
     }
+    cout << sum_residual / p_count << endl; // !!! в консоль выведется средняя относительная погрешность решения
     res.close();
     res.clear();
     file.close();
