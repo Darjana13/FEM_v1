@@ -92,8 +92,8 @@ double func_f(double r, double z, int f_id) // значение f по индексу f_id
             // u* указать в func_S 
             // lambda - первое число в файле material.txt
             // gamma в функции gamma
-            11.0 * cos(3.0 * r + z) + 3.0 / r * sin(3.0 * r + z)
-
+            //11.0 * cos(3.0 * r + z) + 3.0 / r * sin(3.0 * r + z)
+            - 9 * r - 6 * z+ r * r * r + z * z * z
             ;
     default:
         std::cout << "can't find f є " << f_id << "\n";
@@ -111,8 +111,8 @@ double func_S(double r, double z, int s_id) // значение краевого S по индексу f_
     case 0:
         return //5
             // !!! сюда написать истинную функцию u*
-            cos(3.0 * r + z)
-
+            //cos(3.0 * r + z)
+            r*r*r + z*z*z
             ;
     case 1:// 2_z
         return 2 *r*r
@@ -1061,6 +1061,10 @@ int main()
     // !!! тут вывод
     ofstream res("Point.txt"); // !!! этот файл надо будет перетащить в папку со сплайном
     ofstream file("f(r,z).txt"); // !!! в этом файле пишетс€ r, z, f, df/dr, df/dz, ddf/(drdz), надо сравнить с аналогичной штукой в сплайне
+    ofstream check("f_and_true_f.txt");
+    
+
+
 
     vector<basis_func> basis1D = { linear1, linear2 };
     vector<basis_func> dbasis1D = { dlinear1, dlinear2 };
@@ -1093,8 +1097,9 @@ int main()
         }
         res << r << '\t' << z << '\t' << f << '\t' << 1 << endl;
         file << r << '\t' << z << '\t' << f << '\t' << df_dx << '\t' << df_dy << '\t' << df_dx_dy << endl;
-        //check << r << '\t' << z << '\t' << f << '\t' << func_S(r, z, 0) << '\t' << abs(f - func_S(r, z, 0)) / abs(func_S(r, z, 0)) << endl;
+        check << r << '\t' << z << '\t' << f << '\t' << func_S(r, z, 0) << '\t' << abs(f - func_S(r, z, 0)) / abs(func_S(r, z, 0)) << endl;
         sum_residual += abs(f - func_S(r, z, 0)) / abs(func_S(r, z, 0));
+
     }
     cout << sum_residual / p_count << endl; // !!! в консоль выведетс€ средн€€ относительна€ погрешность решени€
     res.close();
@@ -1102,6 +1107,123 @@ int main()
     file.close();
     file.clear();
 
+    ofstream r_const[5], z_const[5];
+    double r_const_val = 2.5, z_const_val = 2.5;
+    r_const[0].open("f_r_const.txt");
+    r_const[1].open("f_dr_r_const.txt");
+    r_const[2].open("f_dz_r_const.txt");
+    r_const[3].open("f_drdz_r_const.txt");
+    r_const[4].open("f_true_r_const.txt");
+
+    z_const[0].open("f_z_const.txt");
+    z_const[1].open("f_dr_z_const.txt");
+    z_const[2].open("f_dz_z_const.txt");
+    z_const[3].open("f_drdz_z_const.txt");
+    z_const[4].open("f_true_z_const.txt");
+
+    double h = 0.01;
+    double r_start = 1, z_start = 1;
+    h = (16.0 - 1.0) / 1000;
+    for (int i = 0; z_start + h * i <= 16; i++)
+    {
+        z = z_start + h * i;
+        r = r_const_val;
+
+        int cur_el = -1;
+        for (int el_i = 0; el_i < all_elems.size() && cur_el == -1; el_i++)
+        {
+            r1 = all_nodes[all_elems[el_i].node_loc[0]].r;
+            r2 = all_nodes[all_elems[el_i].node_loc[1]].r;
+            z1 = all_nodes[all_elems[el_i].node_loc[0]].z;
+            z2 = all_nodes[all_elems[el_i].node_loc[2]].z;
+
+            if (r1 <= r && r <= r2 && z1 <= z && z <= z2)
+            {
+                cur_el = el_i;
+            }
+        } 
+        if (cur_el == -1)
+        {
+            cout << "AAAA";
+        }
+        f = 0;
+        df_dx = 0;
+        df_dy = 0;
+        df_dx_dy = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            f += q4.vect[all_elems[cur_el].node_loc[i]] * basis1D[i % 2](r1, r2, r) * basis1D[i / 2](z1, z2, z);
+            df_dx += q4.vect[all_elems[cur_el].node_loc[i]] * dbasis1D[i % 2](r1, r2, r) * basis1D[i / 2](z1, z2, z);
+            df_dy += q4.vect[all_elems[cur_el].node_loc[i]] * basis1D[i % 2](r1, r2, r) * dbasis1D[i / 2](z1, z2, z);
+            df_dx_dy += q4.vect[all_elems[cur_el].node_loc[i]] * dbasis1D[i % 2](r1, r2, r) * dbasis1D[i / 2](z1, z2, z);
+        }
+        r_const[0] << r << '\t' << z << '\t' << f << endl;
+        r_const[1] << r << '\t' << z << '\t' << df_dx << endl;
+        r_const[2] << r << '\t' << z << '\t' << df_dy << endl;
+        r_const[3] << r << '\t' << z << '\t' << df_dx_dy << endl;
+        r_const[4] << r << '\t' << z << '\t' << func_S(r,z,0) << endl;
+
+        //--------------------------------------------------------------
+        r = r_start + h * i;
+        z = z_const_val;
+
+        cur_el = -1;
+        for (int el_i = 0; el_i < all_elems.size() && cur_el == -1; el_i++)
+        {
+            r1 = all_nodes[all_elems[el_i].node_loc[0]].r;
+            r2 = all_nodes[all_elems[el_i].node_loc[1]].r;
+            z1 = all_nodes[all_elems[el_i].node_loc[0]].z;
+            z2 = all_nodes[all_elems[el_i].node_loc[2]].z;
+
+            if (r1 <= r && r <= r2 && z1 <= z && z <= z2)
+            {
+                cur_el = el_i;
+            }
+        }
+
+        f = 0;
+        df_dx = 0;
+        df_dy = 0;
+        df_dx_dy = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            f += q4.vect[all_elems[cur_el].node_loc[i]] * basis1D[i % 2](r1, r2, r) * basis1D[i / 2](z1, z2, z);
+            df_dx += q4.vect[all_elems[cur_el].node_loc[i]] * dbasis1D[i % 2](r1, r2, r) * basis1D[i / 2](z1, z2, z);
+            df_dy += q4.vect[all_elems[cur_el].node_loc[i]] * basis1D[i % 2](r1, r2, r) * dbasis1D[i / 2](z1, z2, z);
+            df_dx_dy += q4.vect[all_elems[cur_el].node_loc[i]] * dbasis1D[i % 2](r1, r2, r) * dbasis1D[i / 2](z1, z2, z);
+        }
+        z_const[0] << r << '\t' << z << '\t' << f << endl;
+        z_const[1] << r << '\t' << z << '\t' << df_dx << endl;
+        z_const[2] << r << '\t' << z << '\t' << df_dy << endl;
+        z_const[3] << r << '\t' << z << '\t' << df_dx_dy << endl;
+        z_const[4] << r << '\t' << z << '\t' << func_S(r, z, 0) << endl;
+
+
+    }
+    r_const[0].close();
+    r_const[1].close();
+    r_const[2].close();
+    r_const[3].close();
+    r_const[4].close();
+
+    z_const[0].close();
+    z_const[1].close();
+    z_const[2].close();
+    z_const[3].close();
+    z_const[4].close();
+
+
+    r_const[0].clear();
+    r_const[1].clear();
+    r_const[2].clear();
+    r_const[3].clear();
+    r_const[4].clear();
+
+    z_const[0].clear();
+    z_const[1].clear();
+    z_const[2].clear();
+    z_const[3].clear();
+    z_const[4].clear();
 
 
     return 0;
