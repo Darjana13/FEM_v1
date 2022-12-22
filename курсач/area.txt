@@ -1,0 +1,12 @@
+0.10 0.01
+0.56 4200000
+209 2430000
+
+in >> water_bottom >> water_right;
+    in >> water_lambda >> water_gamma;
+    in >> pot_lambda >> pot_gamma;
+
+water_lambda 0.56
+water_gamma = rho*cp = 1000 * 4200
+pot_lambda 209 - аллюминий
+pot_gamma = rho*cp = 2700 * 900

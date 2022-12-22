@@ -138,6 +138,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Gauss.cpp" />
     <ClCompile Include="Generate.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyMatrix.cpp" />
@@ -145,12 +146,14 @@
     <ClCompile Include="Solver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Gauss.h" />
     <ClInclude Include="Generate.h" />
     <ClInclude Include="MyMatrix.h" />
     <ClInclude Include="MyVector.h" />
     <ClInclude Include="Solver.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="area.txt" />
     <Text Include="elem.txt" />
     <Text Include="grid.txt" />
     <Text Include="info.txt" />

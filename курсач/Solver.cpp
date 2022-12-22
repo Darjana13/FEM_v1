@@ -105,7 +105,7 @@ Solver::Solver(std::string filename)
 Solver::Solver(MyMatrix _A)
 {
     N = _A.N;
-    maxIter = 10000;
+    maxIter = 1000;
     eps = 1E-15;
     A = _A;
     x0.Size(N);
@@ -133,6 +133,8 @@ void Solver::output(std::string filename)
 
 void Solver::getx0(std::vector<double>& x)
 {   
+    if (x.size() != N)
+        x.resize(N);
     for (int i = 0; i < N; i++)
         x[i] = x0.vect[i];
 }
@@ -186,10 +188,12 @@ void Solver::CGM_LU()
             z.vect[i] = r.vect[i] + z.vect[i] * B;
         }
         normR = sqrt(r_r) / normB;
-        //std::cout << iter << ". " << normR << std::endl;
+        if(iter % 100 == 0)
+            std::cout << iter << ". " << normR << std::endl;
     }
     // x0 = U^(-1) * x0
     Reverse(U, x0, x0);
+    std::cout << iter << ". " << normR << std::endl;
 }
 
 void Solver::LOS_LU()
@@ -244,8 +248,11 @@ void Solver::LOS_LU()
         else
             r_r = r_r - a * a * p_p;
         normR = sqrt(r_r) / normB;
-        std::cout << iter << ". " << normR << std::endl;
+        if(iter % 20 == 0)
+            std::cout << iter << ". " << normR << std::endl;
     }
+    std::cout << iter << ". " << normR << std::endl;
+
 }
 
 void Solver::FactLU(std::vector<double>& L, std::vector<double>& U, std::vector<double>& D)
