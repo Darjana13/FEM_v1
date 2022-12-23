@@ -353,7 +353,8 @@ void Make_grid2(std::string path)
 
     // везде первые
     /*out.open("S1.txt");
-    out << top.size() + left.size() + bottom.size() + right.size() - 4 << " 0\n";
+    out << 1 << "\n";
+    out << top.size() + left.size() + bottom.size() + right.size() - 4 << " 1\n";
     for (int j = 0; j < top.size(); j++)
     {
         out << top[j] << " ";

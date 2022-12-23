@@ -91,15 +91,98 @@ double gamma(double r, double z, int gam_id) // значение гамма по индексу gam_id
 	}
 }
 double z_max_abs = 0.15, r_max_abs = 0.1; // !!!
+
+//int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double r_max)
+//{
+//	double R = r_max, H = z_max, v_max = 0.02;
+//	//vector <double> v;
+//
+//	// 1___________________________
+//	if (z_max - r >= z && z >= r && r <= 0.5 * r_max)
+//	{
+//		//cout « "1" « "\n";
+//		if (r < R / 4)
+//		{
+//			v[0] = 0;
+//			v[1] = -v_max * r / (R / 4);
+//		}
+//		else
+//		{
+//			v[0] = 0;
+//			v[1] = -v_max * (R / 2 - r) / (R / 4);
+//		}
+//		//cout « v[0] « " " « v[1];
+//	}
+//	// 2___________________________
+//	if (z_max - r < z && z > r && r >= 0.5 * z_max) //(z_max - r < z && z > r && z <= 0.5 * z_max)
+//	{
+//		//cout « "2" « "\n";
+//		if (r > 3 * H / 4)
+//		{
+//			v[1] = 0;
+//			v[0] = -v_max * (H - z) / (H / 4);
+//		}
+//		else
+//		{
+//			v[1] = 0;
+//			v[0] = -v_max * (z - H / 2) / (H / 4);
+//		}
+//		//cout « v[0] « " " « v[1];
+//	}
+//	//3 _______________
+//	if (z_max - r <= z && z <= r && r >= 0.5 * r_max)
+//
+//	{
+//		//cout « "3" « "\n";
+//		if (r > 3 * R / 4)
+//		{
+//			v[0] = 0;
+//			v[1] = v_max * (R - r) / (R / 4);
+//		}
+//		else
+//		{
+//			v[0] = 0;
+//			v[1] = v_max * (r - R / 2) / (R / 4);
+//		}
+//		//cout « v[0] « " " « v[1];
+//	}
+//	//4 ________________
+//	if (z_max - r <= r && z < r && z <= 0.5 * z_max)
+//	{
+//		//cout « "4" « "\n";
+//		if (z < H / 4)
+//		{
+//			v[1] = 0;
+//			v[0] = v_max * r / (H / 4);
+//		}
+//		else
+//		{
+//			v[1] = 0;
+//			v[0] = v_max * (H / 2 - z) / (H / 4);
+//		}
+//		//cout « v[0]« " " « v[1];
+//	}
+//
+//	return 0;
+//}
+
 int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double r_max)
 {
 	double R = r_max, H = z_max, v_max = 0.02;
-	//vector <double> v;
+	if (r > r_max || z > z_max)
+	{
+		v[0] = 0;
+		v[1] = 0;
 
+		return -1;
+	}
+	//vector <double> v;
+	int num = 0;
 	// 1___________________________
 	if (z_max - r >= z && z >= r && r <= 0.5 * r_max)
 	{
-		//cout « "1" « "\n";
+		num = 1;
+		//cout << "1";
 		if (r < R / 4)
 		{
 			v[0] = 0;
@@ -110,12 +193,13 @@ int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double 
 			v[0] = 0;
 			v[1] = -v_max * (R / 2 - r) / (R / 4);
 		}
-		//cout « v[0] « " " « v[1];
+		//cout << v[0] << " " << v[1];
 	}
 	// 2___________________________
 	if (z_max - r < z && z > r && r >= 0.5 * z_max) //(z_max - r < z && z > r && z <= 0.5 * z_max)
 	{
-		//cout « "2" « "\n";
+		num = 2;
+		//cout << "2";
 		if (r > 3 * H / 4)
 		{
 			v[1] = 0;
@@ -126,13 +210,15 @@ int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double 
 			v[1] = 0;
 			v[0] = -v_max * (z - H / 2) / (H / 4);
 		}
-		//cout « v[0] « " " « v[1];
+		//cout << v[0] << " " << v[1] << '\n';
 	}
 	//3 _______________
 	if (z_max - r <= z && z <= r && r >= 0.5 * r_max)
 
 	{
-		//cout « "3" « "\n";
+		num = 3;
+
+		//cout << "3";
 		if (r > 3 * R / 4)
 		{
 			v[0] = 0;
@@ -143,26 +229,30 @@ int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double 
 			v[0] = 0;
 			v[1] = v_max * (r - R / 2) / (R / 4);
 		}
-		//cout « v[0] « " " « v[1];
+		if (v[1] < 0)
+			cout << v[0] << " " << v[1] << " r " << r << " z " << z << '\n';
+		//cout << v[0] << " " << v[1] << '\n';
 	}
 	//4 ________________
 	if (z_max - r <= r && z < r && z <= 0.5 * z_max)
 	{
-		//cout « "4" « "\n";
+		num = 4;
+
+		//cout << "4" << "\n";
 		if (z < H / 4)
 		{
 			v[1] = 0;
-			v[0] = v_max * r / (H / 4);
+			v[0] = v_max * z / (H / 4);
 		}
 		else
 		{
 			v[1] = 0;
 			v[0] = v_max * (H / 2 - z) / (H / 4);
 		}
-		//cout « v[0]« " " « v[1];
+		//cout << v[0] << " " << v[1] << '\n';
 	}
 
-	return 0;
+	return num;
 }
 double beta(double r, double z, int beta_id) // считаем, что бета везде одинаковая
 {
@@ -181,11 +271,13 @@ double beta(double r, double z, int beta_id) // считаем, что бета везде одинаков
 double func_f(double r, double z, int f_id) // значение f по индексу f_id 
 {
 	double t = time_grid[i_t];
+	vector<double> v(2);
+	GetVectorV(v, r, z, z_max_abs, r_max_abs);
 	switch (f_id)
 	{
 	case 0:
 		return 0
-
+			//-0.56 / r + 4200000 * (1 + v[0] * r - v[1]);
 			;
 	default:
 		std::cout << "can't find f № " << f_id << "\n";
@@ -200,10 +292,12 @@ double func_S(double r, double z, int s_id) // значение краевого S по индексу f_
 	{
 	case 0:
 		return //r * r + 3 * z - 5 * t
-			657890
+			26315.0 / 100.0
 			;
 	case 1:// 2_z
-		return 2 * r * r
+		return 
+			//2 * r * r
+			r + z + t
 			;
 	case 2: // 2_r
 		return 3
@@ -1016,6 +1110,21 @@ int main()
 	std::ofstream out;
 	//out.imbue(std::locale("Russian"));
 	out.precision(15);
+
+	out.open("v.txt");
+	vector<double> v(2);
+	double r, z;
+	int num = 0;
+	for (int i = 0; i < all_elems.size(); i++)
+	{
+		r = (all_nodes[all_elems[i].node_loc[0]].r + all_nodes[all_elems[i].node_loc[3]].r) / 2;
+		z = (all_nodes[all_elems[i].node_loc[0]].z + all_nodes[all_elems[i].node_loc[3]].z) / 2;
+		num = GetVectorV(v,r,z,z_max_abs, r_max_abs);
+		out << r << " " << z << " " << v[0] << " " << v[1] << " " << num << endl;
+	}
+	out.close();
+	out.clear();
+
 
 	double
 		dt01 = 0,
