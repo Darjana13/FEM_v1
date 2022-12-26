@@ -140,6 +140,7 @@
   <ItemGroup>
     <ClCompile Include="Gauss.cpp" />
     <ClCompile Include="Generate.cpp" />
+    <ClCompile Include="LU_solver.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyMatrix.cpp" />
     <ClCompile Include="MyVector.cpp" />
@@ -148,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="Gauss.h" />
     <ClInclude Include="Generate.h" />
+    <ClInclude Include="LU_solver.h" />
     <ClInclude Include="MyMatrix.h" />
     <ClInclude Include="MyVector.h" />
     <ClInclude Include="Solver.h" />

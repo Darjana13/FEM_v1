@@ -253,6 +253,24 @@ void Make_grid2(std::string path)
     }
     out.close();
 
+    out.open("r.txt");
+    out << count_r << "\n";
+
+        for (int j = 0; j < count_r; j++)
+        {
+            out << all_R[j] << "\n";
+        }
+    out.close();
+
+    out.open("z.txt");
+    out << count_z << "\n";
+    for (int i = 0; i < count_z; i++)
+    {
+            out << all_Z[i] << "\n";
+        
+    }
+    out.close();
+
     // input area
     // lambda, sigma same in all area
     in.open("area.txt");

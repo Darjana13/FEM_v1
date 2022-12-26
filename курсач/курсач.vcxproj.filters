@@ -36,6 +36,9 @@
     <ClCompile Include="Gauss.cpp">
       <Filter>Исходные файлы\gauss</Filter>
     </ClCompile>
+    <ClCompile Include="LU_solver.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyMatrix.h">
@@ -52,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="Gauss.h">
       <Filter>Исходные файлы\gauss</Filter>
+    </ClInclude>
+    <ClInclude Include="LU_solver.h">
+      <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

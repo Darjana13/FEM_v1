@@ -17,11 +17,15 @@ private:
     int iter;
     double normR;
     double normB;
+
+    int factorize = 0;
 public:
 
     Solver(int size);
     Solver(std::string filename);
     Solver(MyMatrix _A);
+    Solver();
+
 
     void CGM_LU(); // conjugate gradient method whith LU factorization
     void LOS_LU(); // locally optimal scheme whith LU factorization
@@ -32,5 +36,12 @@ public:
     void Reverse(std::vector<double>& U, std::vector<double>& D, MyVector& x, MyVector& y);
     void output(std::string filename);
     void getx0(std::vector<double>& x);
+
+    void InitMemory(int _N, int _ja_n);
+    void Clear();
+    void Clear(std::vector<double>& b);
+    void Clear(MyMatrix _A);
+
+
 
 };

@@ -122,6 +122,16 @@ Solver::Solver(MyMatrix _A)
     normR = 0;
 }
 
+Solver::Solver()
+{
+    N = 0;
+    maxIter = 1000;
+    eps = 1E-15;
+    normB = 0;
+    iter = 0;
+    normR = 0;
+}
+
 void Solver::output(std::string filename)
 {
     std::ofstream out(filename);
@@ -143,7 +153,11 @@ void Solver::CGM_LU()
 {
     std::cout.precision(15);
 
-    FactLU(L, U, D);
+    if (!factorize)
+    {
+        FactLU(L, U, D);
+        factorize = 1;
+    }
 
     double r_r = 0, Az_z = 0;
     double a = 0, B = 0;
@@ -360,4 +374,88 @@ void Solver::Reverse(std::vector<double>& U, std::vector<double>& D, MyVector& x
             x.vect[j] -= x.vect[i] * U[k0];
         }
     }
+}
+
+void Solver::Clear(std::vector<double>& b)
+{
+    factorize = 1;
+    fill(A.al.begin(), A.al.end(), 0.0);
+    fill(A.au.begin(), A.au.end(), 0.0);
+    fill(A.di.begin(), A.di.end(), 0.0);
+    //fill(A.b.vect.begin(), A.b.vect.end(), 0.0);
+    A.b.vect = b;
+
+    fill(x0.vect.begin(), x0.vect.end(), 0.0);
+    fill(r.vect.begin(), r.vect.end(), 0.0);
+    fill(z.vect.begin(), z.vect.end(), 0.0);
+    fill(p.vect.begin(), p.vect.end(), 0.0);
+    fill(Ar.vect.begin(), Ar.vect.end(), 0.0);
+    fill(y.vect.begin(), y.vect.end(), 0.0);
+
+    normB = A.b.Norm();
+    iter = 0;
+    normR = 0;
+}
+
+void Solver::Clear()
+{
+    factorize = 0;
+    fill(A.al.begin(), A.al.end(), 0.0);
+    fill(A.au.begin(), A.au.end(), 0.0);
+    fill(A.di.begin(), A.di.end(), 0.0);
+    fill(A.b.vect.begin(), A.b.vect.end(), 0.0);
+
+    fill(x0.vect.begin(), x0.vect.end(), 0.0);
+    fill(r.vect.begin(), r.vect.end(), 0.0);
+    fill(z.vect.begin(), z.vect.end(), 0.0);
+    fill(p.vect.begin(), p.vect.end(), 0.0);
+    fill(Ar.vect.begin(), Ar.vect.end(), 0.0);
+    fill(y.vect.begin(), y.vect.end(), 0.0);
+    fill(L.begin(), L.end(), 0.0);
+    fill(D.begin(), D.end(), 0.0);
+    fill(U.begin(), U.end(), 0.0);
+
+    normB = 0;
+    iter = 0;
+    normR = 0;
+}
+
+void Solver::Clear(MyMatrix _A)
+{
+    factorize = 0;
+    A = _A;
+
+    fill(x0.vect.begin(), x0.vect.end(), 0.0);
+    fill(r.vect.begin(), r.vect.end(), 0.0);
+    fill(z.vect.begin(), z.vect.end(), 0.0);
+    fill(p.vect.begin(), p.vect.end(), 0.0);
+    fill(Ar.vect.begin(), Ar.vect.end(), 0.0);
+    fill(y.vect.begin(), y.vect.end(), 0.0);
+    fill(L.begin(), L.end(), 0.0);
+    fill(D.begin(), D.end(), 0.0);
+    fill(U.begin(), U.end(), 0.0);
+
+    normB = A.b.Norm();
+    iter = 0;
+    normR = 0;
+}
+
+void Solver::InitMemory(int _N, int _ja_n)
+{
+    N = _N;
+    maxIter = 1000;
+    eps = 1E-15;
+
+    x0.Size(N);
+    r.Size(N);
+    z.Size(N);
+    p.Size(N);
+    Ar.Size(N);
+    y.Size(N);
+    L.resize(_ja_n);
+    D.resize(N);
+    U.resize(_ja_n);
+    normB = 0;
+    iter = 0;
+    normR = 0;
 }

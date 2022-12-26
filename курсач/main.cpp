@@ -5,6 +5,14 @@
 #include "Solver.h"
 #include "Generate.h"
 #include "Gauss.h"
+#include <Windows.h>
+#include "LU_solver.h"
+
+void ClearFolder(string path)
+{
+	string cmd = "del /s /q " + path + "*.*";
+	system(cmd.c_str());
+}
 
 template <typename T>
 string NumberToString(T Number)
@@ -83,7 +91,7 @@ double gamma(double r, double z, int gam_id) // значение гамма по индексу gam_id
 			;
 	case 1:
 		return 
-			4200000*2
+			2430000
 			;
 	default:
 		std::cout << "can't find gamma є " << gam_id << "\n";
@@ -168,8 +176,13 @@ double z_max_abs = 0.15, r_max_abs = 0.1; // !!!
 
 int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double r_max)
 {
-	double R = r_max, H = z_max, v_max = 0.02;
-	if (r > r_max || z > z_max)
+	//v[0] = 0;
+	//v[1] = 0;
+	//return -1;
+
+	double R = r_max, H = z_max, v_max = 0.001;
+	z -= 0.01;
+	if (r > r_max || z < 0)
 	{
 		v[0] = 0;
 		v[1] = 0;
@@ -179,7 +192,7 @@ int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double 
 	//vector <double> v;
 	int num = 0;
 	// 1___________________________
-	if (z_max - r >= z && z >= r && r <= 0.5 * r_max)
+	if (z - 1.5*r >= 0 && z + 1.5*r - z_max < 0)
 	{
 		num = 1;
 		//cout << "1";
@@ -196,11 +209,11 @@ int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double 
 		//cout << v[0] << " " << v[1];
 	}
 	// 2___________________________
-	if (z_max - r < z && z > r && r >= 0.5 * z_max) //(z_max - r < z && z > r && z <= 0.5 * z_max)
+	if (z - 1.5 * r >= 0 && z + 1.5 * r - z_max >= 0) //(z_max - r < z && z > r && z <= 0.5 * z_max)
 	{
 		num = 2;
 		//cout << "2";
-		if (r > 3 * H / 4)
+		if (z > 3 * H / 4)
 		{
 			v[1] = 0;
 			v[0] = -v_max * (H - z) / (H / 4);
@@ -213,7 +226,7 @@ int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double 
 		//cout << v[0] << " " << v[1] << '\n';
 	}
 	//3 _______________
-	if (z_max - r <= z && z <= r && r >= 0.5 * r_max)
+	if (z - 1.5 * r < 0 && z + 1.5 * r - z_max >= 0)
 
 	{
 		num = 3;
@@ -234,7 +247,7 @@ int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double 
 		//cout << v[0] << " " << v[1] << '\n';
 	}
 	//4 ________________
-	if (z_max - r <= r && z < r && z <= 0.5 * z_max)
+	if (z - 1.5 * r < 0 && z + 1.5 * r - z_max < 0)
 	{
 		num = 4;
 
@@ -292,7 +305,7 @@ double func_S(double r, double z, int s_id) // значение краевого S по индексу f_
 	{
 	case 0:
 		return //r * r + 3 * z - 5 * t
-			26315.0 / 100.0
+			52613.0 / 209.0 // 2000 / (pi * 0.11 * 0.11) / 209.0
 			;
 	case 1:// 2_z
 		return 
@@ -342,7 +355,7 @@ int Input() // чтение данных
 	in.close();
 
 	// дл€ тестировани€
-	std::ofstream temp("q0.txt");
+	/*std::ofstream temp("q0.txt");
 	temp.precision(15);
 	for (int k = 0; k < 1; k++)
 	{
@@ -362,42 +375,44 @@ int Input() // чтение данных
 	{
 		in >> q1.vect[i];
 	}
+	in.close();*/
+
+
+	// дл€ тестировани€
+	std::ofstream temp("q0 q1 q2.txt");
+	temp.precision(15);
+	for (int k = 0; k < 3; k++)
+	{
+	    i_t = k;
+	    for (int i = 0; i < N; i++)
+	    {
+	        //temp << func_S(all_nodes[i].r, all_nodes[i].z, 0) << " ";
+			temp << 20.0 << " ";
+
+	    }
+	    temp << "\n";
+	}
+	temp.close();
+	// конец дл€ тестировани€
+
+	in.open("q0 q1 q2.txt");
+	q1.Size(N);
+	for (int i = 0; i < N; i++)
+	{
+	    in >> q1.vect[i];
+	}
+	q2.Size(N);
+	for (int i = 0; i < N; i++)
+	{
+	    in >> q2.vect[i];
+	}
+	q3.Size(N);
+	for (int i = 0; i < N; i++)
+	{
+	    in >> q3.vect[i];
+	}
+	q4.Size(N);
 	in.close();
-
-
-	//// дл€ тестировани€
-	//std::ofstream temp("q0 q1 q2.txt");
-	//temp.precision(15);
-	//for (int k = 0; k < 3; k++)
-	//{
-	//    i_t = k;
-	//    for (int i = 0; i < N; i++)
-	//    {
-	//        temp << func_S(all_nodes[i].r, all_nodes[i].z, 0) << " ";
-	//    }
-	//    temp << "\n";
-	//}
-	//temp.close();
-	//// конец дл€ тестировани€
-
-	//in.open("q0 q1 q2.txt");
-	//q1.Size(N);
-	//for (int i = 0; i < N; i++)
-	//{
-	//    in >> q1.vect[i];
-	//}
-	//q2.Size(N);
-	//for (int i = 0; i < N; i++)
-	//{
-	//    in >> q2.vect[i];
-	//}
-	//q3.Size(N);
-	//for (int i = 0; i < N; i++)
-	//{
-	//    in >> q3.vect[i];
-	//}
-	//q4.Size(N);
-	//in.close();
 
 	in.open("S1.txt");
 	in >> NS1;
@@ -622,6 +637,7 @@ double GetMG_Loc(double rp, double zs, int gam, double hr, double hz,
 		g2 = gamma(rp + hr, zs, gam),
 		g3 = gamma(rp, zs + hz, gam),
 		g4 = gamma(rp + hr, zs + hz, gam);*/
+
 	Node2D from(rp, zs), to(rp + hr, zs + hz);
 	func_2coord_to_1 phi;
 	std::vector<double> v(2);
@@ -652,7 +668,9 @@ double GetMG_Loc(double rp, double zs, int gam, double hr, double hz,
 					basis_1D[i % 2](from.x, to.x, x) * basis_1D[i / 2](from.y, to.y, y) * x;
 			};
 			MG_loc[i][j] = gauss.IntegrateFunc(from, to, phi);
+			//cout << MG_loc[i][j] << "\t";
 		}
+		//cout << "\n";
 	}
 
 	return 0;
@@ -706,6 +724,7 @@ int Get_Loc(std::vector<std::vector<double>>& M_loc, std::vector<std::vector<dou
 	GetMG_Loc(all_nodes[el.node_loc[0]].r, all_nodes[el.node_loc[0]].z, all_materials[el.mater].gamma_id, hr, hz, MG_loc);
 	return 0;
 }
+
 int Get_Loc_b(std::vector<double>& b_loc,
 	int el_id) // получить вектор правой части
 {
@@ -1054,6 +1073,23 @@ int Set_S3(MyMatrix& MS, bool flag) // MS.b - вектор вклада от краевых
 
 int main()
 {
+	//LU_solver LU;
+	//vector<int> 
+	//	ia_t = {0, 0, 1, 2, 3, 5},
+	//	ja_t = {0, 1, 1, 0, 2};
+	//vector<double> 
+	//	au_t = {-1, -2, -3, -4, -5},
+	//	al_t = { 1, 2, 3, 4, 5 },
+	//	di_t = {11, 22, 33, 44, 55},
+	//	b_t = { -11, 2, 103, 182, 289 },
+	//	x(5);
+
+	//LU.Init(ia_t, ja_t, au_t, al_t, di_t, b_t);
+	//LU.Calc(x); // right x = {1, 2, 3, 4, 5} if ja_t = {0, 1, 1, 0, 1}
+	//b_t = { 47, 76, 107, 100, 95 };
+	//LU.Recalc(b_t, x); // right x = {5, 4, 3, 2, 1} if ja_t = {0, 1, 1, 0, 1}
+
+	ClearFolder("L:\\ћое\\курсач\\курсач\\output\\");
 	//Node2D from(5, 0), to(7, 10);
 	//func_2coord_to_1 test1 = test;
 	gauss.Init();
@@ -1064,7 +1100,7 @@ int main()
 
 	Input();
 
-	std::vector<std::vector<double>> result(time_grid.size() - 1); // for tests
+	//std::vector<std::vector<double>> result(time_grid.size() - 1); // for tests
 
 	MyMatrix M, G, A, MS;
 	GeneratePortrait(M, all_nodes.size(), all_elems.size());
@@ -1115,12 +1151,13 @@ int main()
 	vector<double> v(2);
 	double r, z;
 	int num = 0;
+	out << all_elems.size() << '\n';
 	for (int i = 0; i < all_elems.size(); i++)
 	{
 		r = (all_nodes[all_elems[i].node_loc[0]].r + all_nodes[all_elems[i].node_loc[3]].r) / 2;
 		z = (all_nodes[all_elems[i].node_loc[0]].z + all_nodes[all_elems[i].node_loc[3]].z) / 2;
 		num = GetVectorV(v,r,z,z_max_abs, r_max_abs);
-		out << r << " " << z << " " << v[0] << " " << v[1] << " " << num << endl;
+		out << v[0] << " " << v[1] << " " << num << endl;
 	}
 	out.close();
 	out.clear();
@@ -1217,9 +1254,14 @@ int main()
 		q3.vect.swap(q4.vect);
 	}*/
 
+	//Solver slau;
+	//slau.InitMemory(all_nodes.size(), G.ja.size());
+	// 
+	LU_solver solver_LU;
 	// не€вна€
-	/*for (i_t = 3; i_t < time_grid.size(); i_t++)
+	for (i_t = 3; i_t < time_grid.size(); i_t++)
 	{
+		cout << " i_t " << i_t << " time " << time_grid[i_t] << endl;
 		change_matrix = false;
 		if (dt01 != time_grid[i_t] - time_grid[i_t - 1] ||
 			dt02 != time_grid[i_t] - time_grid[i_t - 2] ||
@@ -1284,9 +1326,27 @@ int main()
 
 
 		// решить —Ћј”
-		Solver slau(A);
-		slau.CGM_LU();
-		slau.getx0(q4.vect);
+		//Solver slau(A);
+		/*if (i_t == 3 || change_matrix)
+		{
+			slau.Clear(A);
+		}
+		else
+		{
+			slau.Clear(A.b.vect);
+		}*/
+		//slau.CGM_LU();
+		//slau.getx0(q4.vect);
+
+		if (i_t == 3 || change_matrix)
+		{
+			solver_LU.Init(A.ia, A.ja, A.au, A.al, A.di, A.b.vect);
+			solver_LU.Calc(q4.vect);
+		}
+		else
+		{
+			solver_LU.Recalc(A.b.vect, q4.vect);
+		}
 
 		// вывести ответ на временном слое
 		//out << "time = " << ";" << time_grid[i_t] << "\n";
@@ -1294,15 +1354,42 @@ int main()
 		//{
 		//    out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q4.vect[i] << "\n";
 		//}
-		result[i_t - 3] = q4.vect; // for tests
+		//result[i_t - 3] = q4.vect; // for tests
+		out.open("output\\time_" + NumberToString(i_t) + ".txt");
+		for (int i = 0; i < all_nodes.size(); i++)
+		{
+			out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q4.vect[i] << "\n"; // вывод в каждом узле
+		}
+		out.close();
+		out.clear();
+		out.open("output_elem\\time_" + NumberToString(i_t) + ".txt");
+		// вывод в центре элемента
+		for (int i = 0; i < all_elems.size(); i++)
+		{
+			node from = all_nodes[all_elems[i].node_loc[0]];
+			node to = all_nodes[all_elems[i].node_loc[3]];
+			node centre;
+			centre.r = (from.r + to.r) / 2.0;
+			centre.z = (from.z + to.z) / 2.0;
+
+			double res = 0;
+			for (int j = 0; j < 4; j++)
+			{
+				int node_id = all_elems[i].node_loc[j];
+				res += q4.vect[node_id] * basis_1D[j % 2](from.r, to.r, centre.r) * basis_1D[j / 2](from.z, to.z, centre.z);
+			}
+			out << res << '\n';
+		}
+		out.close();
+		out.clear();
 		// сменить слой
 		q1.vect.swap(q2.vect);
 		q2.vect.swap(q3.vect);
 		q3.vect.swap(q4.vect);
 	}
-	*/
+	
 
-	for (i_t = 1; i_t < time_grid.size(); i_t++)
+	/*for (i_t = 1; i_t < time_grid.size(); i_t++)
 	{
 		cout << " i_t " << i_t << " time " << time_grid[i_t] << endl;
 		change_matrix = false;
@@ -1378,7 +1465,7 @@ int main()
 	   // q3.vect.swap(q4.vect);
 
 	}
-
+	*/
 	// for tests
 	/*bool outflag = false;
 	for (int i = 0; i < all_nodes.size(); i++)
