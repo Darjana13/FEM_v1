@@ -1407,7 +1407,7 @@ int main()
 		{
 			A = G;
 			A.b.Size(G.N);
-			A = A + M * (1 / dt01);
+			A = A + M * (1.0 / dt01);
 		}
 
 		// пересобрать вектор правой части
@@ -1424,7 +1424,7 @@ int main()
 		MyVector temp;
 		temp.Size(all_nodes.size());
 		M.Ax(q1, temp);
-		A.b = A.b + temp * (1 / dt01);
+		A.b = A.b + temp * (1.0 / dt01);
 
 		// учесть краевые
 		Set_S2(MS);
