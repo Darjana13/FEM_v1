@@ -180,7 +180,7 @@ int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double 
 	//v[1] = 0;
 	//return -1;
 
-	double R = r_max, H = z_max, v_max = 0.001;
+	double R = r_max, H = z_max, v_max = 0.005;
 	z -= 0.01;
 	if (r > r_max || z < 0)
 	{
@@ -284,8 +284,6 @@ double beta(double r, double z, int beta_id) // считаем, что бета везде одинаков
 double func_f(double r, double z, int f_id) // значение f по индексу f_id 
 {
 	double t = time_grid[i_t];
-	vector<double> v(2);
-	GetVectorV(v, r, z, z_max_abs, r_max_abs);
 	switch (f_id)
 	{
 	case 0:
@@ -305,7 +303,9 @@ double func_S(double r, double z, int s_id) // значение краевого S по индексу f_
 	{
 	case 0:
 		return //r * r + 3 * z - 5 * t
-			52613.0 / 209.0 // 2000 / (pi * 0.11 * 0.11) / 209.0
+			//(52613.0 * 2)/ 209.0 // 2000 / (pi * 0.11 * 0.11) / 209.0
+			// 1800.0 * 100.0 // 180000
+			52613.0
 			;
 	case 1:// 2_z
 		return 
@@ -355,7 +355,7 @@ int Input() // чтение данных
 	in.close();
 
 	// для тестирования
-	/*std::ofstream temp("q0.txt");
+	std::ofstream temp("q0.txt");
 	temp.precision(15);
 	for (int k = 0; k < 1; k++)
 	{
@@ -375,44 +375,44 @@ int Input() // чтение данных
 	{
 		in >> q1.vect[i];
 	}
-	in.close();*/
+	in.close();
 
 
 	// для тестирования
-	std::ofstream temp("q0 q1 q2.txt");
-	temp.precision(15);
-	for (int k = 0; k < 3; k++)
-	{
-	    i_t = k;
-	    for (int i = 0; i < N; i++)
-	    {
-	        //temp << func_S(all_nodes[i].r, all_nodes[i].z, 0) << " ";
-			temp << 20.0 << " ";
+	//std::ofstream temp("q0 q1 q2.txt");
+	//temp.precision(15);
+	//for (int k = 0; k < 3; k++)
+	//{
+	//    i_t = k;
+	//    for (int i = 0; i < N; i++)
+	//    {
+	//        //temp << func_S(all_nodes[i].r, all_nodes[i].z, 0) << " ";
+	//		temp << 20.0 << " ";
 
-	    }
-	    temp << "\n";
-	}
-	temp.close();
-	// конец для тестирования
+	//    }
+	//    temp << "\n";
+	//}
+	//temp.close();
+	//// конец для тестирования
 
-	in.open("q0 q1 q2.txt");
-	q1.Size(N);
-	for (int i = 0; i < N; i++)
-	{
-	    in >> q1.vect[i];
-	}
-	q2.Size(N);
-	for (int i = 0; i < N; i++)
-	{
-	    in >> q2.vect[i];
-	}
-	q3.Size(N);
-	for (int i = 0; i < N; i++)
-	{
-	    in >> q3.vect[i];
-	}
-	q4.Size(N);
-	in.close();
+	//in.open("q0 q1 q2.txt");
+	//q1.Size(N);
+	//for (int i = 0; i < N; i++)
+	//{
+	//    in >> q1.vect[i];
+	//}
+	//q2.Size(N);
+	//for (int i = 0; i < N; i++)
+	//{
+	//    in >> q2.vect[i];
+	//}
+	//q3.Size(N);
+	//for (int i = 0; i < N; i++)
+	//{
+	//    in >> q3.vect[i];
+	//}
+	//q4.Size(N);
+	//in.close();
 
 	in.open("S1.txt");
 	in >> NS1;
@@ -1090,6 +1090,7 @@ int main()
 	//LU.Recalc(b_t, x); // right x = {5, 4, 3, 2, 1} if ja_t = {0, 1, 1, 0, 1}
 
 	ClearFolder("L:\\Мое\\курсач\\курсач\\output\\");
+	ClearFolder("L:\\Мое\\курсач\\курсач\\output_elem\\");
 	//Node2D from(5, 0), to(7, 10);
 	//func_2coord_to_1 test1 = test;
 	gauss.Init();
@@ -1259,137 +1260,140 @@ int main()
 	// 
 	LU_solver solver_LU;
 	// неявная
-	for (i_t = 3; i_t < time_grid.size(); i_t++)
-	{
-		cout << " i_t " << i_t << " time " << time_grid[i_t] << endl;
-		change_matrix = false;
-		if (dt01 != time_grid[i_t] - time_grid[i_t - 1] ||
-			dt02 != time_grid[i_t] - time_grid[i_t - 2] ||
-			dt03 != time_grid[i_t] - time_grid[i_t - 3] ||
-			dt12 != time_grid[i_t - 1] - time_grid[i_t - 2] ||
-			dt13 != time_grid[i_t - 1] - time_grid[i_t - 3] ||
-			dt23 != time_grid[i_t - 2] - time_grid[i_t - 3])
-			change_matrix = true;
+	//for (i_t = 3; i_t < time_grid.size(); i_t++)
+	//{
+	//	cout << " i_t " << i_t << " time " << time_grid[i_t] << endl;
+	//	change_matrix = false;
+	//	if (dt01 != time_grid[i_t] - time_grid[i_t - 1] ||
+	//		dt02 != time_grid[i_t] - time_grid[i_t - 2] ||
+	//		dt03 != time_grid[i_t] - time_grid[i_t - 3] ||
+	//		dt12 != time_grid[i_t - 1] - time_grid[i_t - 2] ||
+	//		dt13 != time_grid[i_t - 1] - time_grid[i_t - 3] ||
+	//		dt23 != time_grid[i_t - 2] - time_grid[i_t - 3])
+	//		change_matrix = true;
 
-		dt01 = time_grid[i_t] - time_grid[i_t - 1];
-		dt02 = time_grid[i_t] - time_grid[i_t - 2];
-		dt03 = time_grid[i_t] - time_grid[i_t - 3];
-		dt12 = time_grid[i_t - 1] - time_grid[i_t - 2];
-		dt13 = time_grid[i_t - 1] - time_grid[i_t - 3];
-		dt23 = time_grid[i_t - 2] - time_grid[i_t - 3];
+	//	dt01 = time_grid[i_t] - time_grid[i_t - 1];
+	//	dt02 = time_grid[i_t] - time_grid[i_t - 2];
+	//	dt03 = time_grid[i_t] - time_grid[i_t - 3];
+	//	dt12 = time_grid[i_t - 1] - time_grid[i_t - 2];
+	//	dt13 = time_grid[i_t - 1] - time_grid[i_t - 3];
+	//	dt23 = time_grid[i_t - 2] - time_grid[i_t - 3];
 
-		double sum = 0;
-		//пересобрать матрицу, если необходимо
-		if (change_matrix)
-		{
-			A = G;
-			A.b.Size(G.N);
-			A = A + M * ((dt01 * dt02 + dt01 * dt03 + dt02 * dt03) / (dt01 * dt02 * dt03));
+	//	double sum = 0;
+	//	//пересобрать матрицу, если необходимо
+	//	if (change_matrix)
+	//	{
+	//		A = G;
+	//		A.b.Size(G.N);
+	//		A = A + M * ((dt01 * dt02 + dt01 * dt03 + dt02 * dt03) / (dt01 * dt02 * dt03));
 
-		}
-		//sum += (dt01 * dt02 + dt01 * dt03 + dt02 * dt03) / (dt01 * dt02 * dt03);
-		// пересобрать вектор правой части
-		for (int i = 0; i < A.b.vect.size(); i++)
-		{
-			A.b.vect[i] = 0;
-			MS.b.vect[i] = 0;
-		}
-
-
-
-		for (int i = 0; i < all_elems.size(); i++)
-		{
-			Get_Loc_b(b_loc, i);
-			AddLocal_b(A.b.vect, b_loc, i);
-		}
-		MyVector temp;
-		temp.Size(all_nodes.size());
-		M.Ax(q1, temp);
-		A.b = A.b + temp * ((dt01 * dt02) / (dt03 * dt13 * dt23));
-		M.Ax(q2, temp);
-		A.b = A.b + temp * ((-dt01 * dt03) / (dt02 * dt12 * dt23));
-		M.Ax(q3, temp);
-		A.b = A.b + temp * ((dt02 * dt03) / (dt01 * dt12 * dt13));
-
-		// учесть краевые
-		Set_S2(MS);
-		Set_S3(MS, change_matrix); //!!!!!!!!!!!!!!! матрица А не меняется
-		A = A + MS;
-		A.b = A.b + MS.b;
-		SetS1(A.ia, A.ja, A.di, A.al, A.au, A.b.vect);
-		if (change_matrix) // если меняли матрицу, сбросить учтенные в А краевые
-		{
-			std::fill(MS.al.begin(), MS.al.end(), 0);
-			std::fill(MS.au.begin(), MS.au.end(), 0);
-			std::fill(MS.di.begin(), MS.di.end(), 0);
-		}
+	//	}
+	//	//sum += (dt01 * dt02 + dt01 * dt03 + dt02 * dt03) / (dt01 * dt02 * dt03);
+	//	// пересобрать вектор правой части
+	//	for (int i = 0; i < A.b.vect.size(); i++)
+	//	{
+	//		A.b.vect[i] = 0;
+	//		MS.b.vect[i] = 0;
+	//	}
 
 
-		// решить СЛАУ
-		//Solver slau(A);
-		/*if (i_t == 3 || change_matrix)
-		{
-			slau.Clear(A);
-		}
-		else
-		{
-			slau.Clear(A.b.vect);
-		}*/
-		//slau.CGM_LU();
-		//slau.getx0(q4.vect);
 
-		if (i_t == 3 || change_matrix)
-		{
-			solver_LU.Init(A.ia, A.ja, A.au, A.al, A.di, A.b.vect);
-			solver_LU.Calc(q4.vect);
-		}
-		else
-		{
-			solver_LU.Recalc(A.b.vect, q4.vect);
-		}
+	//	for (int i = 0; i < all_elems.size(); i++)
+	//	{
+	//		Get_Loc_b(b_loc, i);
+	//		AddLocal_b(A.b.vect, b_loc, i);
+	//	}
+	//	MyVector temp;
+	//	temp.Size(all_nodes.size());
+	//	M.Ax(q1, temp);
+	//	A.b = A.b + temp * ((dt01 * dt02) / (dt03 * dt13 * dt23));
+	//	M.Ax(q2, temp);
+	//	A.b = A.b + temp * ((-dt01 * dt03) / (dt02 * dt12 * dt23));
+	//	M.Ax(q3, temp);
+	//	A.b = A.b + temp * ((dt02 * dt03) / (dt01 * dt12 * dt13));
 
-		// вывести ответ на временном слое
-		//out << "time = " << ";" << time_grid[i_t] << "\n";
-		//for (int i = 0; i < all_nodes.size(); i++)
-		//{
-		//    out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q4.vect[i] << "\n";
-		//}
-		//result[i_t - 3] = q4.vect; // for tests
-		out.open("output\\time_" + NumberToString(i_t) + ".txt");
-		for (int i = 0; i < all_nodes.size(); i++)
-		{
-			out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q4.vect[i] << "\n"; // вывод в каждом узле
-		}
-		out.close();
-		out.clear();
-		out.open("output_elem\\time_" + NumberToString(i_t) + ".txt");
-		// вывод в центре элемента
-		for (int i = 0; i < all_elems.size(); i++)
-		{
-			node from = all_nodes[all_elems[i].node_loc[0]];
-			node to = all_nodes[all_elems[i].node_loc[3]];
-			node centre;
-			centre.r = (from.r + to.r) / 2.0;
-			centre.z = (from.z + to.z) / 2.0;
+	//	// учесть краевые
+	//	Set_S2(MS);
+	//	//Set_S3(MS, change_matrix); //!!!!!!!!!!!!!!! матрица А не меняется
+	//	//A = A + MS;
+	//	A.b = A.b + MS.b;
+	//	SetS1(A.ia, A.ja, A.di, A.al, A.au, A.b.vect);
+	//	if (change_matrix) // если меняли матрицу, сбросить учтенные в А краевые
+	//	{
+	//		std::fill(MS.al.begin(), MS.al.end(), 0);
+	//		std::fill(MS.au.begin(), MS.au.end(), 0);
+	//		std::fill(MS.di.begin(), MS.di.end(), 0);
+	//	}
 
-			double res = 0;
-			for (int j = 0; j < 4; j++)
-			{
-				int node_id = all_elems[i].node_loc[j];
-				res += q4.vect[node_id] * basis_1D[j % 2](from.r, to.r, centre.r) * basis_1D[j / 2](from.z, to.z, centre.z);
-			}
-			out << res << '\n';
-		}
-		out.close();
-		out.clear();
-		// сменить слой
-		q1.vect.swap(q2.vect);
-		q2.vect.swap(q3.vect);
-		q3.vect.swap(q4.vect);
-	}
-	
 
-	/*for (i_t = 1; i_t < time_grid.size(); i_t++)
+	//	// решить СЛАУ
+	//	//Solver slau(A);
+	//	/*if (i_t == 3 || change_matrix)
+	//	{
+	//		slau.Clear(A);
+	//	}
+	//	else
+	//	{
+	//		slau.Clear(A.b.vect);
+	//	}*/
+	//	//slau.CGM_LU();
+	//	//slau.getx0(q4.vect);
+
+	//	if (i_t == 3 || change_matrix)
+	//	{
+	//		solver_LU.Init(A.ia, A.ja, A.au, A.al, A.di, A.b.vect);
+	//		solver_LU.Calc(q4.vect);
+	//	}
+	//	else
+	//	{
+	//		solver_LU.Recalc(A.b.vect, q4.vect);
+	//	}
+
+	//	// вывести ответ на временном слое
+	//	//out << "time = " << ";" << time_grid[i_t] << "\n";
+	//	//for (int i = 0; i < all_nodes.size(); i++)
+	//	//{
+	//	//    out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q4.vect[i] << "\n";
+	//	//}
+	//	//result[i_t - 3] = q4.vect; // for tests
+	//	if (i_t % 1000 == 0)
+	//	{
+	//		out.open("output\\time_" + NumberToString(i_t) + ".txt");
+	//		for (int i = 0; i < all_nodes.size(); i++)
+	//		{
+	//			out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q4.vect[i] << "\n"; // вывод в каждом узле
+	//		}
+	//		out.close();
+	//		out.clear();
+	//		out.open("output_elem\\time_" + NumberToString(i_t) + ".txt");
+	//		// вывод в центре элемента
+	//		for (int i = 0; i < all_elems.size(); i++)
+	//		{
+	//			node from = all_nodes[all_elems[i].node_loc[0]];
+	//			node to = all_nodes[all_elems[i].node_loc[3]];
+	//			node centre;
+	//			centre.r = (from.r + to.r) / 2.0;
+	//			centre.z = (from.z + to.z) / 2.0;
+
+	//			double res = 0;
+	//			for (int j = 0; j < 4; j++)
+	//			{
+	//				int node_id = all_elems[i].node_loc[j];
+	//				res += q4.vect[node_id] * basis_1D[j % 2](from.r, to.r, centre.r) * basis_1D[j / 2](from.z, to.z, centre.z);
+	//			}
+	//			out << res << '\n';
+	//		}
+	//		out.close();
+	//		out.clear();
+	//	}
+	//	// сменить слой
+	//	q1.vect.swap(q2.vect);
+	//	q2.vect.swap(q3.vect);
+	//	q3.vect.swap(q4.vect);
+	//}
+	//
+
+	for (i_t = 1; i_t < time_grid.size(); i_t++)
 	{
 		cout << " i_t " << i_t << " time " << time_grid[i_t] << endl;
 		change_matrix = false;
@@ -1438,24 +1442,58 @@ int main()
 
 
 		// решить СЛАУ
-		Solver slau(A);
-		slau.CGM_LU();
-		//slau.LOS_LU();
-		slau.getx0(q2.vect);
-		out.open("output\\time_" + NumberToString(i_t) + ".txt");
-		for (int i = 0; i < all_nodes.size(); i++)
+		//Solver slau(A);
+		//slau.CGM_LU();
+		////slau.LOS_LU();
+		//slau.getx0(q2.vect);
+
+		if (i_t == 1 || change_matrix)
 		{
-			out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q2.vect[i] << "\n";
+			solver_LU.Init(A.ia, A.ja, A.au, A.al, A.di, A.b.vect);
+			solver_LU.Calc(q2.vect);
 		}
-		out.close();
-		out.clear();
+		else
+		{
+			solver_LU.Recalc(A.b.vect, q2.vect);
+		}
+
+		if (i_t % 1000 == 0)
+		{
+			out.open("output\\time_" + NumberToString(i_t) + ".txt");
+			for (int i = 0; i < all_nodes.size(); i++)
+			{
+				out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q2.vect[i] << "\n"; // вывод в каждом узле
+			}
+			out.close();
+			out.clear();
+			out.open("output_elem\\time_" + NumberToString(i_t) + ".txt");
+			// вывод в центре элемента
+			for (int i = 0; i < all_elems.size(); i++)
+			{
+				node from = all_nodes[all_elems[i].node_loc[0]];
+				node to = all_nodes[all_elems[i].node_loc[3]];
+				node centre;
+				centre.r = (from.r + to.r) / 2.0;
+				centre.z = (from.z + to.z) / 2.0;
+
+				double res = 0;
+				for (int j = 0; j < 4; j++)
+				{
+					int node_id = all_elems[i].node_loc[j];
+					res += q2.vect[node_id] * basis_1D[j % 2](from.r, to.r, centre.r) * basis_1D[j / 2](from.z, to.z, centre.z);
+				}
+				out << res << '\n';
+			}
+			out.close();
+			out.clear();
+		}
+
 		// вывести ответ на временном слое
 	   // out << "time = " << ";" << time_grid[i_t] << "\n";
 		//for (int i = 0; i < all_nodes.size(); i++)
 	   // {
 	   //    out << all_nodes[i].r << "\t" << all_nodes[i].z << "\t" << q2.vect[i] << "\n";
 	   // }
-		result[i_t - 1] = q2.vect; // for tests
 		//// сменить слой
 		q1.vect.swap(q2.vect);
 
@@ -1465,7 +1503,7 @@ int main()
 	   // q3.vect.swap(q4.vect);
 
 	}
-	*/
+	
 	// for tests
 	/*bool outflag = false;
 	for (int i = 0; i < all_nodes.size(); i++)
