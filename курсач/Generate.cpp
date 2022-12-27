@@ -285,6 +285,7 @@ void Make_grid2(std::string path)
     in.close();
 
     out.open("elem.txt");
+    std::ofstream out2("material_to_elem.txt");
     out << (count_z - 1) * (count_r - 1) << "\n";
 
     for (int i = 0; i < count_z - 1; i++)
@@ -297,10 +298,16 @@ void Make_grid2(std::string path)
             r_center = (all_R[j] + all_R[j + 1]) / 2;
             z_center = (all_Z[i] + all_Z[i + 1]) / 2;
 
-            if(r_center >= water_right || z_center <= water_bottom)
+            if (r_center >= water_right || z_center <= water_bottom)
+            {
                 out << " 1 0\n";
+                out2 << "1\n";
+            }
             else
+            {
                 out << " 0 0\n";
+                out2 << "0\n";
+            }
         }
     }
     out.close();

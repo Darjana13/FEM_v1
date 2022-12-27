@@ -180,7 +180,7 @@ int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double 
 	//v[1] = 0;
 	//return -1;
 
-	double R = r_max, H = z_max, v_max = 0.005;
+	double R = r_max, H = z_max, v_max = 0.01;
 	z -= 0.01;
 	if (r > r_max || z < 0)
 	{
@@ -264,6 +264,9 @@ int GetVectorV(std::vector<double>& v, double r, double z, double z_max, double 
 		}
 		//cout << v[0] << " " << v[1] << '\n';
 	}
+
+	v[0] *= -1.0;
+	v[1] *= -1.0;
 
 	return num;
 }
